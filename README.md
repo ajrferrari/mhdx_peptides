@@ -1,2 +1,2 @@
 # mhdx_peptides
-Tools for analysis of peptide data
+Tools for analysis of mhdx on digested samples
