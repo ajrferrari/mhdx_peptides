@@ -1,0 +1,29 @@
+{
+  "condition": "nep2",
+  "bg_scope": "identified",
+  "rule_C": "(?<=[LKYR])(?!P)",
+  "rule_N": null,
+  "residues_C": {
+    "strict": [
+      "L"
+    ],
+    "balanced": [
+      "L",
+      "K"
+    ],
+    "broad": [
+      "L",
+      "K",
+      "Y",
+      "R"
+    ]
+  },
+  "rules_C": {
+    "strict": "(?<=[L])(?!P)",
+    "balanced": "(?<=[LK])(?!P)",
+    "broad": "(?<=[LKYR])(?!P)"
+  },
+  "nscan_picked": [],
+  "mc_percentile": 95.0,
+  "mc_cutoff": 3.0
+}
