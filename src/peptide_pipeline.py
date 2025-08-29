@@ -35,6 +35,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 
+import seaborn as sns
+
 from pyteomics import parser, mass
 
 # =============================================================================
@@ -829,6 +831,54 @@ def run_pipeline(
     # 8) Save “all proteins in one plot”: stacked unique vs non-unique
     out_bars = os.path.join(fig_dir, "unique_vs_nonunique_by_protein.png")
     plot_unique_nonunique_all(df_unique, out_bars)
+
+   # 8b) Summary 1x3 panels
+    df_obs = df_unique.query("observed == 1").copy()
+    n_proteins_identified = df_obs["name"].nunique()
+    pep_counts = df_obs.groupby("name")["peptide"].nunique()
+
+    fig, axes = plt.subplots(
+        1, 3, figsize=(7, 2.5), dpi=300,
+        gridspec_kw={"width_ratios": [0.5, 3, 3]}
+    )
+
+    # Panel 1: proteins identified
+    axes[0].bar([0], [n_proteins_identified], color="steelblue", edgecolor="black")
+    axes[0].set_xticks([])
+    axes[0].set_ylabel("# proteins identified", fontsize=7)
+    axes[0].text(0, n_proteins_identified, str(n_proteins_identified),
+                 ha="center", va="bottom", fontsize=7)
+
+    # Panel 2: missed cleavages
+    sns.histplot(
+        df_obs["n_missed_clavages"],
+        bins=range(df_obs["n_missed_clavages"].max()+2),
+        discrete=True, color="tomato", edgecolor="black", ax=axes[1]
+    )
+    axes[1].set_xlabel("Missed cleavages", fontsize=7)
+    axes[1].set_ylabel("Count", fontsize=7)
+
+    # Panel 3: peptides per protein + ECDF
+    ax3 = axes[2]
+    sns.histplot(pep_counts, bins=20, color="seagreen",
+                 edgecolor="black", ax=ax3, discrete=True)
+    ax3.set_xlabel("# peptides per protein", fontsize=7)
+    ax3.set_ylabel("Count", fontsize=7)
+
+    ax3b = ax3.twinx()
+    sns.ecdfplot(pep_counts, color="black", ax=ax3b)
+    ax3b.set_ylabel("ECDF", fontsize=7)
+
+    # Clean style
+    for ax in [axes[0], axes[1], ax3, ax3b]:
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.tick_params(labelsize=7)
+
+    plt.tight_layout()
+    out_summary = os.path.join(fig_dir, "summary_panels.png")
+    fig.savefig(out_summary, dpi=300)
+    plt.close(fig)
 
     # 9) Per-protein peptide maps (Theoretical vs Observed) with aligned layout
     # order proteins by observed unique count (desc)
